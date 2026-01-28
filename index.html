@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Tap Game 20 Seconds</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f0f0f0;
+        text-align: center;
+        overflow: hidden;
+    }
+    #info {
+        margin: 10px;
+        font-size: 18px;
+    }
+    #tapBtn {
+        position: absolute;
+        font-size: 24px;
+        padding: 18px 35px;
+        cursor: pointer;
+    }
+    .enemy {
+        position: absolute;
+        font-size: 40px;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<h1>🎮 เกมกดสะสมคะแนน</h1>
+
+<div id="info">
+    ❤️ เลือด: <span id="hp">3</span> |
+    🎯 คะแนน: <span id="score">0</span> |
+    🏆 สูงสุด: <span id="highscore">0</span> |
+    ⏱️ เวลา: <span id="time">20</span>
+</div>
+
+<button id="tapBtn">กดคะแนน</button>
+
+<audio id="clickSound">
+  <source src="https://www.soundjay.com/buttons/sounds/button-16.mp3">
+</audio>
+
+<script>
+let score = 0;
+let timeLeft = 20; // ⏱️ เริ่มที่ 20 วินาที
+let hp = 3;
+let gameOver = false;
+let timePaused = false;
+
+let highscore = localStorage.getItem("highscore") || 0;
+document.getElementById("highscore").innerText = highscore;
+
+const btn = document.getElementById("tapBtn");
+const sound = document.getElementById("clickSound");
+
+// 🎯 กดปุ่ม (หยุดเวลาอย่างเดียว)
+btn.addEventListener("click", () => {
+    if (gameOver) return;
+
+    timePaused = true;
+    score++;
+    document.getElementById("score").innerText = score;
+
+    sound.currentTime = 0;
+    sound.play();
+    moveButton();
+
+    setTimeout(() => {
+        timePaused = false;
+    }, 300);
+});
+
+// 🔀 ปุ่มขยับ
+function moveButton() {
+    btn.style.left = Math.random() * (window.innerWidth - 120) + "px";
+    btn.style.top = Math.random() * (window.innerHeight - 160) + "px";
+}
+
+// ⏱️ เวลาเดิน
+setInterval(() => {
+    if (gameOver || timePaused) return;
+
+    timeLeft--;
+    document.getElementById("time").innerText = timeLeft;
+
+    if (timeLeft <= 0) endGame();
+}, 1000);
+
+// 👾 ศัตรู
+function spawnEnemy() {
+    if (gameOver) return;
+
+    let enemy = document.createElement("div");
+    enemy.className = "enemy";
+    enemy.innerText = "👾";
+
+    enemy.style.left = Math.random() * (window.innerWidth - 50) + "px";
+    enemy.style.top = Math.random() * (window.innerHeight - 100) + "px";
+
+    enemy.onclick = () => {
+        enemy.remove();
+        hit();
+    };
+
+    document.body.appendChild(enemy);
+    setTimeout(() => enemy.remove(), 1500);
+}
+setInterval(spawnEnemy, 1400);
+
+// 💥 โดนศัตรู
+function hit() {
+    hp--;
+    document.getElementById("hp").innerText = hp;
+    if (hp <= 0) endGame();
+}
+
+// 💀 เกมจบ
+function endGame() {
+    gameOver = true;
+    if (score > highscore) localStorage.setItem("highscore", score);
+    alert("เกมจบ!\nคะแนน: " + score);
+    location.reload();
+}
+
+// เริ่มเกม
+moveButton();
+</script>
+
+</body>
+</html>
